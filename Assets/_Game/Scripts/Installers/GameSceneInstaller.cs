@@ -13,5 +13,7 @@ public class GameSceneInstaller : MonoInstaller
 
         Container.BindInterfacesAndSelfTo<GameLoopController>()
                 .AsSingle();
+
+        Container.Bind<ShapesSpawner>().AsSingle();
     }
 }

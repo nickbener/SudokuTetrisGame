@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: GameConfigInstaller
   m_EditorClassIdentifier: Assembly-CSharp::GameConfigInstaller
   _gameConfig: {fileID: 11400000, guid: db4b56cd4b98b40ff9d85937031d0093, type: 2}
+  _shapesDatabase: {fileID: 11400000, guid: 528145c63a9be4dd08f76a74a6b10ff1, type: 2}

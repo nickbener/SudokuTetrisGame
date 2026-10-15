@@ -1,16 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public class ShapesDatabaseSO : MonoBehaviour
+[CreateAssetMenu(fileName = "ShapesDatabase", menuName = "Configs/ShapesDatabase")]
+public class ShapesDatabaseSO : ScriptableObject
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] private List<ShapeConfigSO> _allShapes = new List<ShapeConfigSO>();
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public IReadOnlyList<ShapeConfigSO> AllShapes => _allShapes;
 }

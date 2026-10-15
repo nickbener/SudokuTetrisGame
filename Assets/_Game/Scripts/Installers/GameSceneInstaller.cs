@@ -1,0 +1,17 @@
+using UnityEngine;
+using Zenject;
+
+public class GameSceneInstaller : MonoInstaller
+{
+    public override void InstallBindings()
+    {
+        Container.Bind<GridModel>().AsSingle();
+
+        Container.Bind<GridView>()
+                .FromComponentInHierarchy()
+                .AsSingle();
+
+        Container.BindInterfacesAndSelfTo<GameLoopController>()
+                .AsSingle();
+    }
+}

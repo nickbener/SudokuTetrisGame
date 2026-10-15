@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a598e2c7215534651b21388cd2b58cca, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: Assembly-CSharp::GameConfigSO
-  _width: 0
-  _height: 0
-  "pointsPer\u0421ell": 0
+  _width: 8
+  _height: 8
+  "pointsPer\u0421ell": 10

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d38761eaac57f42e1bea1b399a648f7c, type: 3}
   m_Name: GameConfigInstaller
   m_EditorClassIdentifier: Assembly-CSharp::GameConfigInstaller
-  _gameConfig: {fileID: 0}
+  _gameConfig: {fileID: 11400000, guid: db4b56cd4b98b40ff9d85937031d0093, type: 2}

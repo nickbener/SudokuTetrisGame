@@ -42,7 +42,7 @@ public class AudioService : MonoBehaviour, IAudioService
 
         if (isPaused)
         {
-            _musicSource.volume = _normalMusicVolume * 0.5f;
+            _musicSource.volume = _normalMusicVolume * 0.25f;
         }
         else
         {

@@ -1,16 +1,30 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ShapeView : MonoBehaviour
+public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public Image _blockPrefab;
     public float _cellSize;
     public float _spacing;
     private ShapeModel _model;
-    private List<GameObject> _spawnedBlocks = new List<GameObject>();
+    private List<RectTransform> _spawnedBlocks = new List<RectTransform>();
     private float _currentAngle = 0f;
 
+    private Vector3 _startPosition;
+    private Transform _startParent;
+    private Canvas _parentCanvas;
+    public event Action OnDragStarted;
+    public event Action<ShapeView> OnDragEnded;
+    public ShapeModel Model => _model;
+    public List<RectTransform> SpawnedBlocks => _spawnedBlocks;
+
+    private void Awake()
+    {
+        _parentCanvas = GetComponentInParent<Canvas>();
+    }
     public void Setup(ShapeModel model)
     {
         _model = model;
@@ -30,9 +44,7 @@ public class ShapeView : MonoBehaviour
     {
         if (_model == null) return;
 
-        float step = _cellSize + _spacing;
-        int minX = 5, maxX = -1;
-        int minY = 5, maxY = -1;
+        int minX = 5, maxX = -1, minY = 5, maxY = -1;
 
         for (int y = 0; y < 5; y++)
         {
@@ -47,7 +59,9 @@ public class ShapeView : MonoBehaviour
                 }
             }
         }
+
         if (maxX < minX || maxY < minY) return;
+
         float centerX = (minX + maxX) / 2f;
         float centerY = (minY + maxY) / 2f;
 
@@ -58,25 +72,91 @@ public class ShapeView : MonoBehaviour
                 if (!_model.IsCellActive(x, y)) continue;
 
                 Image block = Instantiate(_blockPrefab, transform);
-                float offsetX = x - centerX;
-                float offsetY = y - centerY;
-
                 RectTransform rect = block.GetComponent<RectTransform>();
                 rect.pivot = new Vector2(0.5f, 0.5f);
                 rect.anchorMin = new Vector2(0.5f, 0.5f);
                 rect.anchorMax = new Vector2(0.5f, 0.5f);
+                _spawnedBlocks.Add(rect);
+            }
+        }
+        ApplyBlockSize(_cellSize, _spacing);
+    }
 
-                rect.sizeDelta = new Vector2(_cellSize, _cellSize);
-                rect.anchoredPosition = new Vector2(offsetX * step, offsetY * step);
+    public void ApplyBlockSize(float cellSize, float spacing)
+    {
+        if (_model == null) return;
 
-                _spawnedBlocks.Add(block.gameObject);
+        float step = cellSize + spacing;
+        int minX = 5, maxX = -1, minY = 5, maxY = -1;
+
+        for (int y = 0; y < 5; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                if (_model.IsCellActive(x, y))
+                {
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
+        }
+
+        float centerX = (minX + maxX) / 2f;
+        float centerY = (minY + maxY) / 2f;
+
+        int blockIndex = 0;
+        for (int y = 0; y < 5; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                if (!_model.IsCellActive(x, y)) continue;
+
+                if (blockIndex < _spawnedBlocks.Count)
+                {
+                    RectTransform rect = _spawnedBlocks[blockIndex];
+                    rect.sizeDelta = new Vector2(cellSize, cellSize);
+                    rect.anchoredPosition = new Vector2((x - centerX) * step, (y - centerY) * step);
+                    blockIndex++;
+                }
             }
         }
     }
-        
+
     public void RotateVisual()
     {
         _currentAngle -= 90f;
         transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+    }
+
+    // --- ЛОГИКА DRAG AND DROP ---
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        _startPosition = transform.position;
+        _startParent = transform.parent;
+        if (_parentCanvas != null)
+        {
+            transform.SetParent(_parentCanvas.transform, true);
+        }
+
+        OnDragStarted?.Invoke();
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        transform.position = eventData.position;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        OnDragEnded?.Invoke(this);
+    }
+
+    public void ReturnToSlot()
+    {
+        transform.SetParent(_startParent, true);
+        transform.position = _startPosition;
+        ApplyBlockSize(_cellSize, _spacing);
     }
 }

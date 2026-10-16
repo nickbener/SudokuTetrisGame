@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,9 +7,13 @@ public class ShapeSlotView : MonoBehaviour
     public ShapeView _shapeViewPrefab;
     public Transform _spawnPoint;
     public Button _rotateButton;
-
     private ShapeModel _currentModel;
     private ShapeView _spawnedShapeView;
+    private bool _wasDragged = false;
+    public event Action<ShapeView> OnShapeDragStarted;
+    public event Action<ShapeSlotView, ShapeView> OnShapeDropped;
+
+    public bool IsEmpty => _currentModel == null;
 
     private void Awake()
     {
@@ -20,7 +25,14 @@ public class ShapeSlotView : MonoBehaviour
 
     public void InitSlot(ShapeModel model)
     {
-        _currentModel = model;
+       _currentModel = model;
+        _wasDragged = false;
+
+        if (_rotateButton != null)
+        {
+            _rotateButton.interactable = true;
+        }
+
         if (_spawnedShapeView != null)
         {
             Destroy(_spawnedShapeView.gameObject);
@@ -30,11 +42,41 @@ public class ShapeSlotView : MonoBehaviour
         {
             _spawnedShapeView = Instantiate(_shapeViewPrefab, _spawnPoint);
             _spawnedShapeView.Setup(_currentModel);
+            _spawnedShapeView.OnDragStarted += HandleDragStarted;
+            _spawnedShapeView.OnDragEnded += HandleDragEnded;
+        }
+    }
+
+    private void HandleDragStarted()
+    {
+        _wasDragged = true;
+        if (_rotateButton != null)
+        {
+            _rotateButton.interactable = false;
+        }
+
+        OnShapeDragStarted?.Invoke(_spawnedShapeView);
+    }
+
+    private void HandleDragEnded(ShapeView view)
+    {
+        OnShapeDropped?.Invoke(this, view);
+    }
+
+    public void ClearSlot()
+    {
+        _currentModel = null;
+        if (_spawnedShapeView != null)
+        {
+            Destroy(_spawnedShapeView.gameObject);
+            _spawnedShapeView = null;
         }
     }
 
     private void OnRotateClicked()
     {
+        if (_wasDragged) return;
+
         if (_currentModel != null && _spawnedShapeView != null)
         {
             _currentModel.Rotate();

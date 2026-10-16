@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,6 +22,8 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public event Action<ShapeView> OnDragEnded;
     public ShapeModel Model => _model;
     public List<RectTransform> SpawnedBlocks => _spawnedBlocks;
+
+    private bool _isAnimating = false;
 
     private void Awake()
     {
@@ -135,8 +138,10 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public void RotateVisual()
     {
+        if (_isAnimating) return;
         _currentAngle -= 90f;
-        transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+        transform.DOKill(); 
+        transform.DORotate(new Vector3(0f, 0f, _currentAngle), 0.15f).SetEase(Ease.OutQuad);
     }
 
     // --- ЛОГИКА DRAG AND DROP ---
@@ -145,13 +150,14 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         if (_parentCanvas == null)
             _parentCanvas = GetComponentInParent<Canvas>();
 
+        if (_isAnimating) return;
+
         _startPosition = transform.position;
         _startParent = transform.parent;
-
         if (_parentCanvas != null)
         {
             transform.SetParent(_parentCanvas.transform, true);
-            transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+            transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle); // Фиксируем угол
         }
 
         OnDragStarted?.Invoke(this);
@@ -160,19 +166,41 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (_isAnimating) return;
+
         transform.position = eventData.position;
+        transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+            
         OnDragging?.Invoke(this);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (_isAnimating) return;
         OnDragEnded?.Invoke(this);
+    }
+
+    public void MoveToGridAndFinish(Vector3 targetWorldPos, Action onCompleteCallback)
+    {
+        _isAnimating = true;
+        transform.DOMove(targetWorldPos, 0.12f).SetEase(Ease.OutQuad).OnComplete(() =>
+        {
+            _isAnimating = false;
+            onCompleteCallback?.Invoke();
+        });
     }
 
     public void ReturnToSlot()
     {
+        _isAnimating = true;
         transform.SetParent(_startParent, true);
-        transform.localPosition = Vector3.zero;
-        transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+
+        transform.DOMove(_startPosition, 0.25f).SetEase(Ease.OutBack);
+        transform.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack).OnComplete(() =>
+        {
+            _isAnimating = false;
+            transform.localPosition = Vector3.zero; // Доворачиваем ровно в центр слота
+            transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+        });
     }
 }

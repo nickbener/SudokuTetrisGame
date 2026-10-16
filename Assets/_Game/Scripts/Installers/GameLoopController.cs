@@ -150,36 +150,46 @@ public class GameLoopController : IInitializable, ITickable
             foreach (CellView cell in targetCells)
             {
                 _gridModel.SetCellOccupied(cell.Coordinates.x, cell.Coordinates.y, true);
-                cell.SetState(true);
             }
-
-            slot.ClearSlot();
-            List<Vector2Int> clearedCoords = _gridModel.CheckAndClearFullLines();
-            if (clearedCoords.Count > 0)
+            Vector3 offset = targetCells[0].transform.position - shapeView.SpawnedBlocks[0].position;
+            Vector3 snapPosition = shapeView.transform.position + offset;
+            shapeView.MoveToGridAndFinish(snapPosition, () =>
             {
-                foreach (Vector2Int coords in clearedCoords)
+                foreach (CellView cell in targetCells)
                 {
-                    CellView cellToClear = _gridView.GetCellView(coords.x, coords.y);
-                    if (cellToClear != null)
-                    {
-                        cellToClear.PlayClearAnimation();
-                    }
+                    cell.SetState(true);
                 }
 
-                int earnedPoints = clearedCoords.Count * _config.PointsPerСell;
-                _currentScore += earnedPoints;
-                _scoreView.UpdateScore(_currentScore);
-                _saveService.SaveScore(_currentScore);
-                _audioService.PlayClearLineSound();
-                
-                Debug.Log($"Сгорело ячеек: {clearedCoords.Count}! Получено очков: {earnedPoints}. Всего очков: {_currentScore}");
-            }
-            _audioService.PlayPlaceSound();
-            CheckIfAllSlotsEmpty();
-            CheckForGameOver();
+                _audioService.PlayPlaceSound();
+                slot.ClearSlot();
+                List<Vector2Int> clearedCoords = _gridModel.CheckAndClearFullLines();
+
+                if (clearedCoords.Count > 0)
+                {
+                    _audioService.PlayClearLineSound();
+
+                    foreach (Vector2Int coords in clearedCoords)
+                    {
+                        CellView cellToClear = _gridView.GetCellView(coords.x, coords.y);
+                        if (cellToClear != null)
+                        {
+                            cellToClear.PlayClearAnimation();
+                        }
+                    }
+
+                    int earnedPoints = clearedCoords.Count * _config.PointsPerСell;
+                    _currentScore += earnedPoints;
+                    _scoreView.UpdateScore(_currentScore);
+                }
+
+                // Выдаем новые 3 фигуры, если слоты опустели, и проверяем на поражение[cite: 1]
+                CheckIfAllSlotsEmpty();
+                CheckForGameOver();
+            });
         }
         else
         {
+            // Если поставить некуда — фигура плавно летит домой в слот[cite: 1]
             shapeView.ReturnToSlot();
         }
     }

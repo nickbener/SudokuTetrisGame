@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88174e93ab52145ac841f6f584ee0ac2, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: Assembly-CSharp::AudioConfigSO
+  _backgroundMusic: {fileID: 8300000, guid: 2261f7868c3094bcdb770d1dcfb25f70, type: 3}
+  _musicVolume: 0.5
+  _placeShapeSound: {fileID: 8300000, guid: d160d8e22a2e0433394b1446e6f676be, type: 3}
+  _takeShape: {fileID: 8300000, guid: dccda9f863b4b46b7a4045a91a2dd16f, type: 3}
+  _rotateSound: {fileID: 8300000, guid: bbdada271be09489197a36cb6665824e, type: 3}
+  _clearLineSound: {fileID: 8300000, guid: b11e480dcf98e409b8b686d3c1dc5e40, type: 3}
+  _sfxVolume: 0.8

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GridModel
@@ -35,7 +36,47 @@ public class GridModel
         }
     }
 
-    public System.Collections.Generic.List<Vector2Int> CheckAndClearFullLines()
+    public bool CanPlaceShapeAnywhere( ShapeModel originalShape)
+    {
+        if (originalShape == null) return false;
+
+        var tempShape = originalShape.Clone();
+        for (int rot = 0; rot < 4; rot++)
+        {
+            for (int gridY = -4; gridY < _height; gridY++)
+                for (int gridX = -4; gridX < _width; gridX++)
+                    if (CanFitAtPosition(tempShape, gridX, gridY))
+                        return true;
+            tempShape.Rotate();
+        }
+
+        return false;
+    }
+
+    private bool CanFitAtPosition(ShapeModel shape, int startX, int startY)
+    {
+        bool hasAtLeastOneBlock = false;
+
+        for (int y = 0; y < 5; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                if (!shape.IsCellActive(x, y)) continue;
+
+                hasAtLeastOneBlock = true;
+                int targetX = startX + x;
+                int targetY = startY + y;
+                if (!IsValidCoordinate(targetX, targetY) || _cells[targetX, targetY])
+                {
+                    return false;
+                }
+            }
+        }
+
+        return hasAtLeastOneBlock;
+    }
+
+    public List<Vector2Int> CheckAndClearFullLines()
     {
         var clearedCells = new System.Collections.Generic.List<Vector2Int>();
         for (int y = 0; y < _height; y++)
@@ -60,6 +101,7 @@ public class GridModel
                 }
             }
         }
+
         for (int x = 0; x < _width; x++)
         {
             bool isColFull = true;
@@ -80,13 +122,12 @@ public class GridModel
                     if (!clearedCells.Contains(pos))
                         clearedCells.Add(pos);
                 }
-                }
             }
-            foreach (var cellPos in clearedCells)
-            {
-                _cells[cellPos.x, cellPos.y] = false;
-            }
-
-            return clearedCells;
         }
+        foreach (var cellPos in clearedCells)
+        {
+            _cells[cellPos.x, cellPos.y] = false;
+        }
+        return clearedCells;
+    }
 }

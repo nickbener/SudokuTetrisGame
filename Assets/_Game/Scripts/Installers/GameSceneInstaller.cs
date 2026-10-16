@@ -17,5 +17,9 @@ public class GameSceneInstaller : MonoInstaller
         Container.Bind<ShapesSpawner>().AsSingle();
 
         Container.Bind<ScoreView>().FromComponentInHierarchy().AsSingle();
+
+        Container.Bind<PauseView>().FromComponentInHierarchy().AsSingle();
+
+        Container.Bind<ISaveService>().To<FileSaveService>().AsSingle();
     }
 }

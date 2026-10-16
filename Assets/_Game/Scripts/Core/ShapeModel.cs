@@ -46,17 +46,30 @@ public class ShapeModel
     }
 
     public void Rotate()
+    {
+        bool[,] newGrid = new bool[5, 5];
+
+        for (int y = 0; y < 5; y++)
         {
-            bool[,] newGrid = new bool[5, 5];
-
-            for (int y = 0; y < 5; y++)
+            for (int x = 0; x < 5; x++)
             {
-                for (int x = 0; x < 5; x++)
-                {
-                    newGrid[y, 4 - x] = _currentGrid[x, y];
-                }
+                newGrid[y, 4 - x] = _currentGrid[x, y];
             }
-
-            _currentGrid = newGrid;
         }
+
+        _currentGrid = newGrid;
+    }
+
+    public ShapeModel Clone()
+    {
+        ShapeModel copy = new ShapeModel(_config);
+        for (int y = 0; y < 5; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                copy._currentGrid[x, y] = this._currentGrid[x, y];
+            }
+        }
+        return copy;
+    }
 }

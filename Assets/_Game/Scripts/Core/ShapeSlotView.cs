@@ -14,6 +14,7 @@ public class ShapeSlotView : MonoBehaviour
     public event Action<ShapeSlotView, ShapeView> OnShapeDropped;
 
     public bool IsEmpty => _currentModel == null;
+    public ShapeModel CurrentModel => _currentModel;
 
     private void Awake()
     {

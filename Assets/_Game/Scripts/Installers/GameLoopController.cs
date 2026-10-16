@@ -11,6 +11,8 @@ public class GameLoopController : IInitializable, ITickable
     private readonly ShapesSpawner _shapesSpawner;
     private readonly GameConfigSO _config;
     private readonly ScoreView _scoreView;
+    private readonly ISaveService _saveService;
+    private readonly PauseView _pauseView;
     private ShapeSlotView[] _slots; 
 
     private List<CellView> _currentPreviewCells = new List<CellView>();
@@ -21,20 +23,25 @@ public class GameLoopController : IInitializable, ITickable
 
     //public int Limit;
 
-    public GameLoopController(GridModel gridModel, GridView gridView, ShapesSpawner shapesSpawner, GameConfigSO config, ScoreView scoreView)
+    public GameLoopController(GridModel gridModel, GridView gridView, ShapesSpawner shapesSpawner, GameConfigSO config, ScoreView scoreView, ISaveService saveService, PauseView pauseView)
     {
         _gridModel = gridModel;
         _gridView = gridView;
         _shapesSpawner = shapesSpawner;
         _config = config;
         _scoreView = scoreView;
+        _saveService = saveService;
+        _pauseView = pauseView;
     }
 
     public void Initialize()
     {
         _gridView.BuildGrid(_gridModel.Width, _gridModel.Height);
         _currentScore = 0;
+        List<int> topScores = _saveService.LoadTopScores();
         _scoreView.UpdateScore(_currentScore);
+        _pauseView.SetPauseState(false);
+        _pauseView.ShowGameOver(false);
         _slots = GameObject.FindObjectsOfType<ShapeSlotView>();
         foreach (var slot in _slots)
         {
@@ -57,6 +64,19 @@ public class GameLoopController : IInitializable, ITickable
                 UpdateHoverPreview(_currentDraggedShape);
             }
         }
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            TogglePause();
+        }
+    }
+
+    private bool _isPaused = false;
+
+    private void TogglePause()
+    {
+        _isPaused = !_isPaused;
+        _pauseView.SetPauseState(_isPaused);
+        Time.timeScale = _isPaused ? 0f : 1f;
     }
 
     private void RefillSlots()
@@ -113,7 +133,6 @@ public class GameLoopController : IInitializable, ITickable
 
         if (TryGetValidTargetCells(shapeView, out List<CellView> targetCells))
         {
-            // 1. Ставим блоки на поле
             foreach (CellView cell in targetCells)
             {
                 _gridModel.SetCellOccupied(cell.Coordinates.x, cell.Coordinates.y, true);
@@ -124,7 +143,6 @@ public class GameLoopController : IInitializable, ITickable
             List<Vector2Int> clearedCoords = _gridModel.CheckAndClearFullLines();
             if (clearedCoords.Count > 0)
             {
-                // Очищаем визуальные клетки на поле
                 foreach (Vector2Int coords in clearedCoords)
                 {
                     CellView cellToClear = _gridView.GetCellView(coords.x, coords.y);
@@ -137,16 +155,40 @@ public class GameLoopController : IInitializable, ITickable
                 int earnedPoints = clearedCoords.Count * _config.PointsPerСell;
                 _currentScore += earnedPoints;
                 _scoreView.UpdateScore(_currentScore);
+                _saveService.SaveScore(_currentScore);
                 
                 Debug.Log($"Сгорело ячеек: {clearedCoords.Count}! Получено очков: {earnedPoints}. Всего очков: {_currentScore}");
             }
             CheckIfAllSlotsEmpty();
+            CheckForGameOver();
         }
         else
         {
             shapeView.ReturnToSlot();
         }
     }
+
+    private void CheckForGameOver()
+      {
+          bool canMove = false;
+          for (int i = 0; i < _slots.Length; i++)
+          {
+              if (!_slots[i].IsEmpty)
+              {
+                  if (_gridModel.CanPlaceShapeAnywhere(_slots[i].CurrentModel))
+                  {
+                      canMove = true;
+                      break;
+                  }
+              }
+          }
+
+          if (!canMove)
+          {
+              _saveService.SaveScore(_currentScore);
+              _pauseView.ShowGameOver(true);
+          }
+      }
 
     private bool TryGetValidTargetCells(ShapeView shapeView, out List<CellView> targetCells)
     {

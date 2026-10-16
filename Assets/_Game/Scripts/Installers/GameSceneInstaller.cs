@@ -15,5 +15,7 @@ public class GameSceneInstaller : MonoInstaller
                 .AsSingle();
 
         Container.Bind<ShapesSpawner>().AsSingle();
+
+        Container.Bind<ScoreView>().FromComponentInHierarchy().AsSingle();
     }
 }

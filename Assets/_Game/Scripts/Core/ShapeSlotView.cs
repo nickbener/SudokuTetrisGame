@@ -9,7 +9,6 @@ public class ShapeSlotView : MonoBehaviour
     public Button _rotateButton;
     private ShapeModel _currentModel;
     private ShapeView _spawnedShapeView;
-    private bool _wasDragged = false;
     public event Action<ShapeView> OnShapeDragStarted;
     public event Action<ShapeView> OnShapeDragging;
     public event Action<ShapeSlotView, ShapeView> OnShapeDropped;
@@ -27,10 +26,10 @@ public class ShapeSlotView : MonoBehaviour
     public void InitSlot(ShapeModel model)
     {
        _currentModel = model;
-        _wasDragged = false;
 
         if (_rotateButton != null)
         {
+            _rotateButton.gameObject.SetActive(true);
             _rotateButton.interactable = true;
         }
 
@@ -51,7 +50,6 @@ public class ShapeSlotView : MonoBehaviour
 
     private void HandleDragStarted(ShapeView view)
     {
-        _wasDragged = true;
         if (_rotateButton != null)
             _rotateButton.interactable = false;
 
@@ -76,12 +74,13 @@ public class ShapeSlotView : MonoBehaviour
             Destroy(_spawnedShapeView.gameObject);
             _spawnedShapeView = null;
         }
+
+        if (_rotateButton != null)
+                _rotateButton.gameObject.SetActive(false);
     }
 
     private void OnRotateClicked()
     {
-        if (_wasDragged) return;
-
         if (_currentModel != null && _spawnedShapeView != null)
         {
             _currentModel.Rotate();

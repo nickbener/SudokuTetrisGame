@@ -10,6 +10,7 @@ public class GameLoopController : IInitializable, ITickable
     private readonly GridView _gridView;
     private readonly ShapesSpawner _shapesSpawner;
     private readonly GameConfigSO _config;
+    private readonly ScoreView _scoreView;
     private ShapeSlotView[] _slots; 
 
     private List<CellView> _currentPreviewCells = new List<CellView>();
@@ -20,17 +21,20 @@ public class GameLoopController : IInitializable, ITickable
 
     //public int Limit;
 
-    public GameLoopController(GridModel gridModel, GridView gridView, ShapesSpawner shapesSpawner, GameConfigSO config)
+    public GameLoopController(GridModel gridModel, GridView gridView, ShapesSpawner shapesSpawner, GameConfigSO config, ScoreView scoreView)
     {
         _gridModel = gridModel;
         _gridView = gridView;
         _shapesSpawner = shapesSpawner;
         _config = config;
+        _scoreView = scoreView;
     }
 
     public void Initialize()
     {
         _gridView.BuildGrid(_gridModel.Width, _gridModel.Height);
+        _currentScore = 0;
+        _scoreView.UpdateScore(_currentScore);
         _slots = GameObject.FindObjectsOfType<ShapeSlotView>();
         foreach (var slot in _slots)
         {
@@ -132,6 +136,7 @@ public class GameLoopController : IInitializable, ITickable
 
                 int earnedPoints = clearedCoords.Count * _config.PointsPerСell;
                 _currentScore += earnedPoints;
+                _scoreView.UpdateScore(_currentScore);
                 
                 Debug.Log($"Сгорело ячеек: {clearedCoords.Count}! Получено очков: {earnedPoints}. Всего очков: {_currentScore}");
             }

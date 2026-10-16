@@ -150,7 +150,6 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
         if (_parentCanvas != null)
         {
-            // false или сохранение угла вручную гарантирует, что фигура не повернется обратно
             transform.SetParent(_parentCanvas.transform, true);
             transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
         }
@@ -173,8 +172,7 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public void ReturnToSlot()
     {
         transform.SetParent(_startParent, true);
-        transform.position = _startPosition;
-        ApplyBlockSize(_cellSize, _spacing);
+        transform.localPosition = Vector3.zero;
         transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
     }
 }

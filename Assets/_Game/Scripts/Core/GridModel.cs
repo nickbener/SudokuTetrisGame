@@ -34,4 +34,59 @@ public class GridModel
             _cells[x, y] = isOccupied;
         }
     }
+
+    public System.Collections.Generic.List<Vector2Int> CheckAndClearFullLines()
+    {
+        var clearedCells = new System.Collections.Generic.List<Vector2Int>();
+        for (int y = 0; y < _height; y++)
+        {
+            bool isRowFull = true;
+            for (int x = 0; x < _width; x++)
+            {
+                if (!_cells[x, y])
+                {
+                    isRowFull = false;
+                    break;
+                }
+            }
+
+            if (isRowFull)
+            {
+                for (int x = 0; x < _width; x++)
+                {
+                    Vector2Int pos = new Vector2Int(x, y);
+                    if (!clearedCells.Contains(pos))
+                        clearedCells.Add(pos);
+                }
+            }
+        }
+        for (int x = 0; x < _width; x++)
+        {
+            bool isColFull = true;
+            for (int y = 0; y < _height; y++)
+            {
+                if (!_cells[x, y])
+                {
+                    isColFull = false;
+                    break;
+                }
+            }
+
+            if (isColFull)
+            {
+                for (int y = 0; y < _height; y++)
+                {
+                    Vector2Int pos = new Vector2Int(x, y);
+                    if (!clearedCells.Contains(pos))
+                        clearedCells.Add(pos);
+                }
+                }
+            }
+            foreach (var cellPos in clearedCells)
+            {
+                _cells[cellPos.x, cellPos.y] = false;
+            }
+
+            return clearedCells;
+        }
 }

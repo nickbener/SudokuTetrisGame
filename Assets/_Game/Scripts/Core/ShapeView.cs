@@ -16,7 +16,8 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private Vector3 _startPosition;
     private Transform _startParent;
     private Canvas _parentCanvas;
-    public event Action OnDragStarted;
+    public event Action<ShapeView> OnDragStarted;
+    public event Action<ShapeView> OnDragging;
     public event Action<ShapeView> OnDragEnded;
     public ShapeModel Model => _model;
     public List<RectTransform> SpawnedBlocks => _spawnedBlocks;
@@ -124,6 +125,14 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         }
     }
 
+    public void SetDragScale(float gridCellSize)
+    {
+        if (gridCellSize <= 0.1f) return;
+        float scaleFactor = gridCellSize / _cellSize;
+        transform.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
+        transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
+    }
+
     public void RotateVisual()
     {
         _currentAngle -= 90f;
@@ -133,19 +142,27 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     // --- ЛОГИКА DRAG AND DROP ---
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (_parentCanvas == null)
+            _parentCanvas = GetComponentInParent<Canvas>();
+
         _startPosition = transform.position;
         _startParent = transform.parent;
+
         if (_parentCanvas != null)
         {
+            // false или сохранение угла вручную гарантирует, что фигура не повернется обратно
             transform.SetParent(_parentCanvas.transform, true);
+            transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
         }
 
-        OnDragStarted?.Invoke();
+        OnDragStarted?.Invoke(this);
+        OnDrag(eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = eventData.position;
+        OnDragging?.Invoke(this);
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -158,5 +175,6 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         transform.SetParent(_startParent, true);
         transform.position = _startPosition;
         ApplyBlockSize(_cellSize, _spacing);
+        transform.localEulerAngles = new Vector3(0f, 0f, _currentAngle);
     }
 }

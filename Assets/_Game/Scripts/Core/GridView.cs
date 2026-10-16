@@ -66,12 +66,12 @@ public class GridView : MonoBehaviour
             return closest;
     }
 
-    // public CellView GetCellView(int x, int y)
-    // {
-    //     if (x >= 0 && x < _cellViews.GetLength(0) && y >= 0 && y < _cellViews.GetLength(1))
-    //     {
-    //         return _cellViews[x, y];
-    //     }
-    //     return null;
-    // }
+    public CellView GetCellView(int x, int y)
+    {
+        if (x >= 0 && x < _cellViews.GetLength(0) && y >= 0 && y < _cellViews.GetLength(1))
+        {
+            return _cellViews[x, y];
+        }
+        return null;
+    }
 }

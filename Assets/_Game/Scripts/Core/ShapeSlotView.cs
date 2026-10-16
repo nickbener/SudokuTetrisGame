@@ -11,6 +11,7 @@ public class ShapeSlotView : MonoBehaviour
     private ShapeView _spawnedShapeView;
     private bool _wasDragged = false;
     public event Action<ShapeView> OnShapeDragStarted;
+    public event Action<ShapeView> OnShapeDragging;
     public event Action<ShapeSlotView, ShapeView> OnShapeDropped;
 
     public bool IsEmpty => _currentModel == null;
@@ -43,19 +44,23 @@ public class ShapeSlotView : MonoBehaviour
             _spawnedShapeView = Instantiate(_shapeViewPrefab, _spawnPoint);
             _spawnedShapeView.Setup(_currentModel);
             _spawnedShapeView.OnDragStarted += HandleDragStarted;
+            _spawnedShapeView.OnDragging += HandleDragging;
             _spawnedShapeView.OnDragEnded += HandleDragEnded;
         }
     }
 
-    private void HandleDragStarted()
+    private void HandleDragStarted(ShapeView view)
     {
         _wasDragged = true;
         if (_rotateButton != null)
-        {
             _rotateButton.interactable = false;
-        }
 
-        OnShapeDragStarted?.Invoke(_spawnedShapeView);
+        OnShapeDragStarted?.Invoke(view);
+    }
+
+    private void HandleDragging(ShapeView view)
+    {
+        OnShapeDragging?.Invoke(view);
     }
 
     private void HandleDragEnded(ShapeView view)

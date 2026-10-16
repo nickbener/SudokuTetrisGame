@@ -5,9 +5,9 @@ public class GameConfigSO : ScriptableObject
 {
     [SerializeField] private int _width;
     [SerializeField] private int _height;
-    [SerializeField] private int pointsPerСell;
+    [SerializeField] private int _pointsPerСell;
 
     public int Width => _width;
-    public int Height => _width;
-    public int PointsPerСell => _width;
+    public int Height => _height;
+    public int PointsPerСell => _pointsPerСell;
 }

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d17021958a11945739c6b0fdeaa32fec, type: 3}
   m_Name: ShapeConfig 10
   m_EditorClassIdentifier: Assembly-CSharp::ShapeConfigSO
-  _cells: 00000000000001010100000001000000000000000000000000y
+  _cells: 00000000000000010100000101000000000000000000000000y

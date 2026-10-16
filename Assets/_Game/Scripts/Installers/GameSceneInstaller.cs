@@ -20,6 +20,8 @@ public class GameSceneInstaller : MonoInstaller
 
         Container.Bind<PauseView>().FromComponentInHierarchy().AsSingle();
 
+        Container.Bind<IAudioService>().To<AudioService>().FromComponentInHierarchy().AsSingle();
+
         Container.Bind<ISaveService>().To<FileSaveService>().AsSingle();
     }
 }

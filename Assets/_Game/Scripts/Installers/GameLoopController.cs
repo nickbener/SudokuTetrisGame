@@ -13,6 +13,7 @@ public class GameLoopController : IInitializable, ITickable
     private readonly ScoreView _scoreView;
     private readonly ISaveService _saveService;
     private readonly PauseView _pauseView;
+    private readonly IAudioService _audioService;
     private ShapeSlotView[] _slots; 
 
     private List<CellView> _currentPreviewCells = new List<CellView>();
@@ -23,7 +24,15 @@ public class GameLoopController : IInitializable, ITickable
 
     //public int Limit;
 
-    public GameLoopController(GridModel gridModel, GridView gridView, ShapesSpawner shapesSpawner, GameConfigSO config, ScoreView scoreView, ISaveService saveService, PauseView pauseView)
+    public GameLoopController(
+        GridModel gridModel,
+        GridView gridView, 
+        ShapesSpawner shapesSpawner, 
+        GameConfigSO config, 
+        ScoreView scoreView, 
+        ISaveService saveService, 
+        PauseView pauseView,
+        IAudioService audioService)
     {
         _gridModel = gridModel;
         _gridView = gridView;
@@ -32,6 +41,7 @@ public class GameLoopController : IInitializable, ITickable
         _scoreView = scoreView;
         _saveService = saveService;
         _pauseView = pauseView;
+        _audioService = audioService;
     }
 
     public void Initialize()
@@ -40,6 +50,7 @@ public class GameLoopController : IInitializable, ITickable
         _currentScore = 0;
         List<int> topScores = _saveService.LoadTopScores();
         _scoreView.UpdateScore(_currentScore);
+        _audioService.PlayMusic();
         _pauseView.SetPauseState(false);
         _pauseView.ShowGameOver(false);
         _slots = GameObject.FindObjectsOfType<ShapeSlotView>();
@@ -62,6 +73,7 @@ public class GameLoopController : IInitializable, ITickable
                 _currentDraggedShape.Model.Rotate();
                 _currentDraggedShape.RotateVisual();
                 UpdateHoverPreview(_currentDraggedShape);
+                _audioService.PlayRotateSound();
             }
         }
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -76,6 +88,7 @@ public class GameLoopController : IInitializable, ITickable
     {
         _isPaused = !_isPaused;
         _pauseView.SetPauseState(_isPaused);
+        _audioService.SetPauseMusicVolume(_isPaused);
         Time.timeScale = _isPaused ? 0f : 1f;
     }
 
@@ -97,6 +110,7 @@ public class GameLoopController : IInitializable, ITickable
     {
         _currentDraggedShape = shapeView;
         shapeView.SetDragScale(_gridView.CurrentCellSize);
+        _audioService.PlayTakeShape();
     }
 
     private void OnShapeDragging(ShapeView shapeView)
@@ -156,9 +170,11 @@ public class GameLoopController : IInitializable, ITickable
                 _currentScore += earnedPoints;
                 _scoreView.UpdateScore(_currentScore);
                 _saveService.SaveScore(_currentScore);
+                _audioService.PlayClearLineSound();
                 
                 Debug.Log($"Сгорело ячеек: {clearedCoords.Count}! Получено очков: {earnedPoints}. Всего очков: {_currentScore}");
             }
+            _audioService.PlayPlaceSound();
             CheckIfAllSlotsEmpty();
             CheckForGameOver();
         }

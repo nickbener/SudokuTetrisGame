@@ -31,7 +31,6 @@ public class ShapeSlotView : MonoBehaviour
         if (_rotateButton != null)
         {
             _rotateButton.gameObject.SetActive(true);
-            _rotateButton.interactable = true;
         }
 
         if (_spawnedShapeView != null)
@@ -51,9 +50,6 @@ public class ShapeSlotView : MonoBehaviour
 
     private void HandleDragStarted(ShapeView view)
     {
-        if (_rotateButton != null)
-            _rotateButton.interactable = false;
-
         OnShapeDragStarted?.Invoke(view);
     }
 

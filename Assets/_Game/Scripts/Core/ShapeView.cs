@@ -138,7 +138,6 @@ public class ShapeView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public void RotateVisual()
     {
-        if (_isAnimating) return;
         _currentAngle -= 90f;
         transform.DOKill(); 
         transform.DORotate(new Vector3(0f, 0f, _currentAngle), 0.15f).SetEase(Ease.OutQuad);
